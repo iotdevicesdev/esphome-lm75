@@ -31,16 +31,16 @@ void LM75Component::dump_config() {
 void LM75Component::update() {
   uint16_t raw_temp_reg;
   
-  // Write pointer to temperature register with error logging
+  // Write pointer to temperature register with error logging (using address_)
   if (this->write(&LM75_REGISTER_TEMP, 1) != i2c::ERROR_OK) {
-    ESP_LOGE(TAG, "I2C ERROR: Failed to write to LM75 at address 0x%02X", this->address);
+    ESP_LOGE(TAG, "I2C ERROR: Failed to write to LM75 at address 0x%02X", this->address_);
     this->status_set_warning();
     return;
   }
   
-  // Read 2 raw bytes from temperature register with error logging
+  // Read 2 raw bytes from temperature register with error logging (using address_)
   if (this->read(reinterpret_cast<uint8_t *>(&raw_temp_reg), 2) != i2c::ERROR_OK) {
-    ESP_LOGE(TAG, "I2C ERROR: Failed to read from LM75 at address 0x%02X", this->address);
+    ESP_LOGE(TAG, "I2C ERROR: Failed to read from LM75 at address 0x%02X", this->address_);
     this->status_set_warning();
     return;
   }
@@ -50,9 +50,9 @@ void LM75Component::update() {
   raw_temperature = raw_temperature >> LM75_REGISTER_DATA_SHIFT;
   float temperature = raw_temperature * LM75_CONVERSION_FACTOR;
 
-  // Log temperature using integer formatting for ESP8266 compatibility
+  // Log temperature using integer formatting for ESP8266 compatibility (using address_)
   int temp_int = (int)(temperature * 10);
-  ESP_LOGD(TAG, "Got Temperature=%d.%d°C from address 0x%02X", temp_int / 10, abs(temp_int % 10), this->address);
+  ESP_LOGD(TAG, "Got Temperature=%d.%d°C from address 0x%02X", temp_int / 10, abs(temp_int % 10), this->address_);
 
   this->publish_state(temperature);
   this->status_clear_warning();
